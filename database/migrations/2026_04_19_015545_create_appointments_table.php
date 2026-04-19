@@ -24,8 +24,8 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            // Prevent double booking
-            $table->unique(['doctor_id', 'appointment_date', 'appointment_time'], 'unique_booking_slot');
+            // Prevent double booking at the application layer via BookingService (ignoring cancelled status)
+            // (Previously we used a hard DB unique constraint here, but it prevents re-booking a cancelled slot in PostgreSQL)
         });
     }
 
