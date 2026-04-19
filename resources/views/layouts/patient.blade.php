@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
         content="Booking jadwal dokter online — cepat, mudah, langsung terhubung ke WhatsApp Anda.">
-    <title>{{ config('app.clinic_name', 'Klinik Sehat') }} — @yield('title', 'Booking Online')</title>
+    <title>{{ config('app.clinic_name', 'Antrix') }} — @yield('title', 'Booking Online')</title>
     <link rel="icon" type="image/png" href="{{ asset('assets/logo.png') }}">
     <link rel="icon" type="image/png" href="{{ asset('assets/logo.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,11 +34,13 @@
     {{-- Hero Header --}}
     <header class="gradient-hero text-white">
         <div class="max-w-lg mx-auto px-4 py-5 flex items-center gap-3">
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center p-1 overflow-hidden shadow-sm">
-                <img src="{{ asset('assets/logo.png') }}" class="w-full h-full object-contain drop-shadow-md" alt="Logo Klinik">
+            <div
+                class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center p-1 overflow-hidden shadow-sm">
+                <img src="{{ asset('assets/logo.png') }}" class="w-full h-full object-contain drop-shadow-md"
+                    alt="Logo Klinik">
             </div>
             <div>
-                <h1 class="text-lg font-bold leading-tight">{{ config('app.clinic_name', 'Klinik Sehat') }}</h1>
+                <h1 class="text-lg font-bold leading-tight">{{ config('app.clinic_name', 'Antrix') }}</h1>
                 <p class="text-sky-200 text-xs">Booking Dokter Online</p>
             </div>
             <div class="ml-auto text-right hidden sm:block">
@@ -76,7 +78,7 @@
 
     {{-- Footer --}}
     <footer class="text-center py-6 text-slate-400 text-xs">
-        <p>{{ config('app.clinic_name', 'Klinik Sehat') }} &copy; {{ date('Y') }}</p>
+        <p>{{ config('app.clinic_name', 'Antrix') }} &copy; {{ date('Y') }}</p>
         <p class="mt-1">Powered by Hafarou Dev</p>
     </footer>
 

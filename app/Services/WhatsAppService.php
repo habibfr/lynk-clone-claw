@@ -29,7 +29,7 @@ class WhatsAppService
 
         $message = "Halo *{$appointment->patient_name}*,\n\n"
             . "✅ Booking berhasil!\n\n"
-            . "🏥 *" . env('CLINIC_NAME', 'Klinik Sehat') . "*\n"
+            . "🏥 *" . env('CLINIC_NAME', 'Antrix') . "*\n"
             . "👨‍⚕️ {$doctor->name}" . ($doctor->specialization ? " ({$doctor->specialization})" : '') . "\n"
             . "📅 {$date}\n"
             . "⏰ {$time} WIB\n"
@@ -57,7 +57,7 @@ class WhatsAppService
             . "🎟️ Antrian: *{$appointment->queue_number}*\n\n"
             . "Balas *1* untuk konfirmasi kehadiran.\n"
             . "Balas *0* untuk batalkan.\n\n"
-            . "_Klinik Sehat_";
+            . "_Antrix_";
 
         return $this->send($appointment->patient_phone, $message);
     }
@@ -74,7 +74,7 @@ class WhatsAppService
             . "⏰ Jadwal Anda *2 jam lagi* dengan {$doctor->name} pukul {$time} WIB\n"
             . "🎟️ Antrian: *{$appointment->queue_number}*\n\n"
             . "Silakan bersiap dan datang tepat waktu.\n\n"
-            . "_Klinik Sehat_";
+            . "_Antrix_";
 
         return $this->send($appointment->patient_phone, $message);
     }
