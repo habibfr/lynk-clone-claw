@@ -123,4 +123,5 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'clinic_name' => env('CLINIC_NAME', 'Antrix'),
 ];

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.clinic_name', 'Klinik Sehat') }} Admin — @yield('title', 'Dashboard')</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/logo.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -28,11 +29,8 @@
         {{-- Logo --}}
         <div class="p-5 border-b border-white/10">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-sky-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                    </svg>
+                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 flex-shrink-0 shadow-sm overflow-hidden">
+                    <img src="{{ asset('assets/logo.png') }}" class="w-full h-full object-contain" alt="Logo">
                 </div>
                 <div>
                     <p class="text-white font-bold text-sm">{{ config('app.clinic_name', 'Klinik Sehat') }}</p>

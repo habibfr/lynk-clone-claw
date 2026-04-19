@@ -7,6 +7,8 @@
     <meta name="description"
         content="Booking jadwal dokter online — cepat, mudah, langsung terhubung ke WhatsApp Anda.">
     <title>{{ config('app.clinic_name', 'Klinik Sehat') }} — @yield('title', 'Booking Online')</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/logo.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -32,11 +34,8 @@
     {{-- Hero Header --}}
     <header class="gradient-hero text-white">
         <div class="max-w-lg mx-auto px-4 py-5 flex items-center gap-3">
-            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
+            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center p-1 overflow-hidden shadow-sm">
+                <img src="{{ asset('assets/logo.png') }}" class="w-full h-full object-contain drop-shadow-md" alt="Logo Klinik">
             </div>
             <div>
                 <h1 class="text-lg font-bold leading-tight">{{ config('app.clinic_name', 'Klinik Sehat') }}</h1>
