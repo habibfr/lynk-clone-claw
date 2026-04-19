@@ -15,7 +15,7 @@ class WhatsAppService
     public function __construct()
     {
         $this->isMock = env('WABLAST_MOCK', true);
-        $this->token  = env('WABLAST_TOKEN', '');
+        $this->token = env('WABLAST_TOKEN', '');
     }
 
     /**
@@ -24,18 +24,19 @@ class WhatsAppService
     public function sendBookingConfirmation(Appointment $appointment): bool
     {
         $doctor = $appointment->doctor;
-        $date   = Carbon::parse($appointment->appointment_date)->locale('id')->translatedFormat('l, d F Y');
-        $time   = Carbon::parse($appointment->appointment_time)->format('H:i');
+        $date = Carbon::parse($appointment->appointment_date)->locale('id')->translatedFormat('l, d F Y');
+        $time = Carbon::parse($appointment->appointment_time)->format('H:i');
 
         $message = "Halo *{$appointment->patient_name}*,\n\n"
             . "✅ Booking berhasil!\n\n"
-            . "🏥 *" . config('app.clinic_name', 'Klinik Sehat') . "*\n"
+            . "🏥 *" . env('CLINIC_NAME', 'Klinik Sehat') . "*\n"
             . "👨‍⚕️ {$doctor->name}" . ($doctor->specialization ? " ({$doctor->specialization})" : '') . "\n"
             . "📅 {$date}\n"
             . "⏰ {$time} WIB\n"
             . "🎟️ Nomor Antrian: *{$appointment->queue_number}*\n\n"
             . "Mohon datang 10 menit sebelum jadwal.\n"
-            . "📍 " . config('app.clinic_address', '') . "\n\n"
+            . "📍 " . env('CLINIC_ADDRESS', 'Jl. Sehat No. 1, Jakarta') . "\n\n"
+            . "*Harap konfirmasi kehadiran dengan membalas pesan ini dengan YA atau TIDAK*\n\n"
             . "_Pesan ini dikirim otomatis oleh sistem._";
 
         return $this->send($appointment->patient_phone, $message);
@@ -47,7 +48,7 @@ class WhatsAppService
     public function sendReminderH1(Appointment $appointment): bool
     {
         $doctor = $appointment->doctor;
-        $time   = Carbon::parse($appointment->appointment_time)->format('H:i');
+        $time = Carbon::parse($appointment->appointment_time)->format('H:i');
 
         $message = "Halo *{$appointment->patient_name}*,\n\n"
             . "⏰ Pengingat: Besok Anda memiliki jadwal konsultasi\n\n"
@@ -67,7 +68,7 @@ class WhatsAppService
     public function sendReminderH2Jam(Appointment $appointment): bool
     {
         $doctor = $appointment->doctor;
-        $time   = Carbon::parse($appointment->appointment_time)->format('H:i');
+        $time = Carbon::parse($appointment->appointment_time)->format('H:i');
 
         $message = "Halo *{$appointment->patient_name}*,\n\n"
             . "⏰ Jadwal Anda *2 jam lagi* dengan {$doctor->name} pukul {$time} WIB\n"
@@ -97,11 +98,11 @@ class WhatsAppService
         try {
             $response = Http::withHeaders([
                 'Authorization' => $this->token,
-            ])->post('https://api.fonnte.com/send', [
-                'target'  => $phone,
-                'message' => $message,
-                'delay'   => 2,
-            ]);
+            ])->asForm()->post('https://api.fonnte.com/send', [
+                        'target' => $phone,
+                        'message' => $message,
+                        'delay' => 2,
+                    ]);
 
             if ($response->successful() && $response->json('status')) {
                 Log::info('[WhatsApp] Sent to: ' . $phone);
@@ -109,7 +110,7 @@ class WhatsAppService
             }
 
             Log::error('[WhatsApp] Failed to send', [
-                'phone'    => $phone,
+                'phone' => $phone,
                 'response' => $response->json(),
             ]);
             return false;
