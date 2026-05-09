@@ -22,3 +22,14 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Uploads
+public/uploads/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Database
+*.sql.backup
