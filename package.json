@@ -13,10 +13,12 @@
   },
   "dependencies": {
     "@astrojs/node": "^9.0.0",
+    "@lucide/astro": "^1.14.0",
     "@types/multer": "^2.1.0",
     "astro": "^5.18.1",
     "bcryptjs": "^3.0.3",
     "jsonwebtoken": "^9.0.3",
+    "lucide-astro": "^0.556.0",
     "multer": "^2.1.1",
     "pg": "^8.20.0",
     "qrcode": "^1.5.4"
