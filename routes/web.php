@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfileSetupController;
 use App\Http\Controllers\LinkController;
 use App\Http\Controllers\PublicProfileController;
 use Illuminate\Support\Facades\Route;
@@ -17,8 +18,18 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
+    // Redirect to profile setup if no profile
+    if (!auth()->user()->profile) {
+        return redirect()->route('profile.setup');
+    }
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// Profile Setup (first time)
+Route::middleware('auth')->group(function () {
+    Route::get('/setup-profile', [ProfileSetupController::class, 'show'])->name('profile.setup');
+    Route::post('/setup-profile', [ProfileSetupController::class, 'store'])->name('profile.setup.store');
+});
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {

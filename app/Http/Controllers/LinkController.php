@@ -11,6 +11,10 @@ class LinkController extends Controller
 {
     public function index()
     {
+        if (!Auth::user()->profile) {
+            return redirect()->route('profile.setup')->with('error', 'Please setup your profile first.');
+        }
+        
         $links = Auth::user()->profile->links()->orderBy('order')->get();
         return view('links.index', compact('links'));
     }
