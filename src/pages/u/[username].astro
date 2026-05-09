@@ -1,0 +1,293 @@
+---
+import pg from 'pg';
+const { Pool } = pg;
+
+const pool = new Pool({
+  host: 'localhost',
+  port: 5433,
+  database: 'lynk',
+  user: 'postgres',
+  password: 'habibfr',
+});
+
+const query = async (text: string, params?: any[]) => {
+  return pool.query(text, params);
+};
+
+const { username } = Astro.params;
+
+if (!username) {
+  return Astro.redirect('/404');
+}
+
+// Get user
+const userResult = await query(
+  'SELECT id, username, display_name, bio, avatar_url FROM users WHERE username = $1',
+  [username]
+);
+
+if (userResult.rows.length === 0) {
+  return Astro.redirect('/404');
+}
+
+const user = userResult.rows[0];
+
+// Get active links
+const linksResult = await query(
+  'SELECT id, title, url, description, image_url, clicks FROM links WHERE user_id = $1 AND is_active = true ORDER BY position ASC',
+  [user.id]
+);
+
+const links = linksResult.rows;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{user.display_name || user.username} | Lynk</title>
+		<style>
+			[data-astro-cid-wi7zborn] {
+				font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			}
+			
+			@keyframes fadeIn {
+				from {
+					opacity: 0;
+					transform: translateY(20px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+			
+			.fade-in[data-astro-cid-wi7zborn] {
+				animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+			}
+			
+			.link-item[data-astro-cid-wi7zborn] {
+				animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+			}
+			
+			.link-item[data-astro-cid-wi7zborn]:nth-child(1) { animation-delay: 0.1s; opacity: 0; }
+			.link-item[data-astro-cid-wi7zborn]:nth-child(2) { animation-delay: 0.2s; opacity: 0; }
+			.link-item[data-astro-cid-wi7zborn]:nth-child(3) { animation-delay: 0.3s; opacity: 0; }
+			.link-item[data-astro-cid-wi7zborn]:nth-child(4) { animation-delay: 0.4s; opacity: 0; }
+			.link-item[data-astro-cid-wi7zborn]:nth-child(5) { animation-delay: 0.5s; opacity: 0; }
+			.link-item[data-astro-cid-wi7zborn]:nth-child(n+6) { animation-delay: 0.6s; opacity: 0; }
+			
+			.line-clamp-2[data-astro-cid-wi7zborn] {
+				display: -webkit-box;
+				-webkit-line-clamp: 2;
+				-webkit-box-orient: vertical;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body class="bg-black text-white min-h-screen" data-astro-cid-wi7zborn>
+		<div class="max-w-3xl mx-auto px-6 py-20" data-astro-cid-wi7zborn>
+			<!-- Profile Header -->
+			<div class="text-center mb-16 fade-in" data-astro-cid-wi7zborn>
+				<!-- Avatar -->
+				{user.avatar_url && (
+					<div class="mb-8" data-astro-cid-wi7zborn>
+						<img 
+							src={user.avatar_url} 
+							alt={user.username} 
+							class="w-32 h-32 rounded-full mx-auto object-cover border-4 border-lime-400" 
+							data-astro-cid-wi7zborn
+						/>
+					</div>
+				)}
+				
+				<!-- Name & Bio -->
+				<h1 class="text-6xl font-black mb-3 tracking-tight" data-astro-cid-wi7zborn>
+					{user.display_name || user.username}
+				</h1>
+				<p class="text-lime-400 text-lg font-semibold mb-6" data-astro-cid-wi7zborn>
+					@{user.username}
+				</p>
+				{user.bio && (
+					<p class="text-gray-400 max-w-2xl mx-auto" data-astro-cid-wi7zborn>{user.bio}</p>
+				)}
+			</div>
+
+			<!-- Links Container -->
+			<div id="linksContainer" class="space-y-6" data-astro-cid-wi7zborn></div>
+			
+			<!-- Pagination -->
+			<div id="paginationContainer" class="mt-8" data-astro-cid-wi7zborn></div>
+
+			<!-- Footer -->
+			<div class="text-center mt-20 pt-12 border-t border-zinc-800" data-astro-cid-wi7zborn>
+				<p class="text-gray-600 text-sm mb-3" data-astro-cid-wi7zborn>Create your own link hub</p>
+				<a 
+					href="/" 
+					class="inline-flex items-center gap-2 text-sm font-bold text-lime-400 hover:text-lime-300 transition-colors" 
+					data-astro-cid-wi7zborn
+				>
+					<span data-astro-cid-wi7zborn>LYNK</span>
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" data-astro-cid-wi7zborn>
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6" data-astro-cid-wi7zborn />
+					</svg>
+				</a>
+			</div>
+		</div>
+
+		<script define:vars={{ links }}>
+			let currentPage = 1;
+			const linksPerPage = 2;
+			
+			function renderLinks() {
+				const container = document.getElementById('linksContainer');
+				if (!container) return;
+				
+				if (links.length === 0) {
+					container.innerHTML = '<div class="text-center py-20 text-gray-500"><p class="text-2xl font-bold">No links yet</p></div>';
+					return;
+				}
+				
+				const totalPages = Math.ceil(links.length / linksPerPage);
+				const startIndex = (currentPage - 1) * linksPerPage;
+				const endIndex = startIndex + linksPerPage;
+				const paginatedLinks = links.slice(startIndex, endIndex);
+				
+				container.innerHTML = paginatedLinks.map(link => `
+					<div class="link-item bg-zinc-900 border-2 border-zinc-800 rounded-3xl overflow-hidden hover:border-lime-400 transition-all duration-300 group">
+						${link.image_url ? `
+							<div class="relative h-64 overflow-hidden">
+								<img 
+									src="${link.image_url}" 
+									alt="${link.title}" 
+									class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+								/>
+								<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+							</div>
+						` : ''}
+						
+						<div class="p-6">
+							<h3 class="text-2xl font-black text-white group-hover:text-lime-400 transition-colors mb-3">
+								${link.title}
+							</h3>
+							
+							${link.description ? `
+								<div class="mb-4">
+									<p class="${link.description.length > 100 ? 'line-clamp-2' : ''} text-gray-400 leading-relaxed" id="desc-${link.id}">
+										${link.description}
+									</p>
+									${link.description.length > 100 ? `
+										<button 
+											onclick="toggleDesc(${link.id})"
+											class="text-lime-400 text-sm font-bold mt-2 hover:text-lime-300 transition-colors"
+											id="toggle-${link.id}"
+										>
+											Read more
+										</button>
+									` : ''}
+								</div>
+							` : ''}
+							
+							<a
+								href="${link.url}"
+								target="_blank"
+								rel="noopener noreferrer"
+								data-link-id="${link.id}"
+								class="inline-flex items-center gap-3 px-6 py-3 bg-lime-400 text-black rounded-xl font-black uppercase tracking-wide hover:bg-lime-300 transition-all group-hover:scale-105"
+							>
+								<span>Visit Link</span>
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+								</svg>
+							</a>
+						</div>
+					</div>
+				`).join('');
+				
+				renderPagination(totalPages);
+				attachClickTracking();
+			}
+			
+			function renderPagination(totalPages) {
+				const paginationContainer = document.getElementById('paginationContainer');
+				if (!paginationContainer) return;
+				
+				if (totalPages <= 1) {
+					paginationContainer.innerHTML = '';
+					return;
+				}
+				
+				paginationContainer.innerHTML = `
+					<div class="flex items-center justify-center gap-3">
+						<button 
+							onclick="changePage(${currentPage - 1})" 
+							${currentPage === 1 ? 'disabled' : ''}
+							class="px-4 py-2 border-2 border-zinc-800 rounded-lg text-sm font-bold hover:border-lime-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-zinc-800"
+						>
+							←
+						</button>
+						
+						<div class="flex gap-2">
+							${Array.from({length: totalPages}, (_, i) => i + 1).map(page => `
+								<button 
+									onclick="changePage(${page})"
+									class="w-10 h-10 rounded-lg text-sm font-bold ${page === currentPage ? 'bg-lime-400 text-black' : 'border-2 border-zinc-800 text-white hover:border-lime-400'} transition-all"
+								>
+									${page}
+								</button>
+							`).join('')}
+						</div>
+						
+						<button 
+							onclick="changePage(${currentPage + 1})" 
+							${currentPage === totalPages ? 'disabled' : ''}
+							class="px-4 py-2 border-2 border-zinc-800 rounded-lg text-sm font-bold hover:border-lime-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-zinc-800"
+						>
+							→
+						</button>
+					</div>
+				`;
+			}
+			
+			window.changePage = (page) => {
+				const totalPages = Math.ceil(links.length / linksPerPage);
+				if (page < 1 || page > totalPages) return;
+				currentPage = page;
+				renderLinks();
+				document.getElementById('linksContainer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			};
+			
+			window.toggleDesc = (id) => {
+				const desc = document.getElementById(`desc-${id}`);
+				const toggle = document.getElementById(`toggle-${id}`);
+				if (!desc || !toggle) return;
+				
+				if (desc.classList.contains('line-clamp-2')) {
+					desc.classList.remove('line-clamp-2');
+					toggle.textContent = 'Read less';
+				} else {
+					desc.classList.add('line-clamp-2');
+					toggle.textContent = 'Read more';
+				}
+			};
+			
+			function attachClickTracking() {
+				document.querySelectorAll('[data-link-id]').forEach(link => {
+					link.addEventListener('click', async (e) => {
+						const linkId = e.currentTarget.dataset.linkId;
+						if (linkId) {
+							fetch(`/api/links/${linkId}/click`, {
+								method: 'POST',
+								headers: { 'Content-Type': 'application/json' }
+							}).catch(() => {});
+						}
+					});
+				});
+			}
+			
+			// Initial render
+			renderLinks();
+		</script>
+	</body>
+</html>

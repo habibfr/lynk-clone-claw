@@ -1,0 +1,121 @@
+---
+const title = "Login - Lynk";
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<title>{title}</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+		<style>
+			* {
+				font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			}
+		</style>
+	</head>
+	<body class="bg-black text-white min-h-screen flex items-center justify-center p-4">
+		<div class="max-w-md w-full">
+			<!-- Logo -->
+			<div class="text-center mb-12">
+				<a href="/" class="inline-block">
+					<h1 class="text-5xl font-black mb-3 tracking-tight">LYNK</h1>
+				</a>
+				<p class="text-gray-400 text-lg font-semibold">Welcome back!</p>
+			</div>
+
+			<!-- Form Card -->
+			<div class="bg-zinc-900 border-2 border-zinc-800 rounded-3xl p-10">
+				<form id="loginForm" class="space-y-6">
+					<div>
+						<label for="username" class="block text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Username or Email</label>
+						<input
+							type="text"
+							id="username"
+							name="username"
+							required
+							class="w-full px-5 py-4 rounded-xl bg-black border-2 border-zinc-800 text-white placeholder-gray-600 focus:outline-none focus:border-lime-400 transition-colors font-medium"
+							placeholder="johndoe"
+						/>
+					</div>
+
+					<div>
+						<label for="password" class="block text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Password</label>
+						<input
+							type="password"
+							id="password"
+							name="password"
+							required
+							class="w-full px-5 py-4 rounded-xl bg-black border-2 border-zinc-800 text-white placeholder-gray-600 focus:outline-none focus:border-lime-400 transition-colors font-medium"
+							placeholder="••••••••"
+						/>
+					</div>
+
+					<div id="error" class="hidden bg-red-900/50 border-2 border-red-500 text-red-200 px-5 py-4 rounded-xl text-sm font-semibold"></div>
+
+					<button
+						type="submit"
+						class="w-full px-8 py-4 bg-lime-400 text-black rounded-xl font-black text-lg uppercase tracking-wide hover:bg-lime-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02]"
+					>
+						Login
+					</button>
+				</form>
+
+				<div class="mt-8 text-center">
+					<p class="text-gray-400">
+						Don't have an account?
+						<a href="/register" class="text-lime-400 hover:text-lime-300 font-bold ml-1">Sign up</a>
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			const form = document.getElementById('loginForm') as HTMLFormElement;
+			const errorDiv = document.getElementById('error') as HTMLDivElement;
+
+			form.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				
+				const formData = new FormData(form);
+				const data = {
+					username: formData.get('username'),
+					password: formData.get('password')
+				};
+
+				const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+				submitBtn.disabled = true;
+				submitBtn.textContent = 'Logging in...';
+				errorDiv.classList.add('hidden');
+
+				try {
+					const response = await fetch('/api/auth/login', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(data)
+					});
+
+					const result = await response.json();
+
+					if (response.ok) {
+						localStorage.setItem('token', result.token);
+						localStorage.setItem('user', JSON.stringify(result.user));
+						window.location.href = '/dashboard';
+					} else {
+						errorDiv.textContent = result.error || 'Login failed';
+						errorDiv.classList.remove('hidden');
+					}
+				} catch (error) {
+					errorDiv.textContent = 'Network error. Please try again.';
+					errorDiv.classList.remove('hidden');
+				} finally {
+					submitBtn.disabled = false;
+					submitBtn.textContent = 'Login';
+				}
+			});
+		</script>
+	</body>
+</html>

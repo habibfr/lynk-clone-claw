@@ -1,0 +1,400 @@
+---
+const title = "Settings - Lynk";
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<title>{title}</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+		<style>
+			* {
+				font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			}
+		</style>
+	</head>
+	<body class="bg-black text-white min-h-screen">
+		<!-- Navigation -->
+		<nav class="border-b border-zinc-800">
+			<div class="max-w-6xl mx-auto px-6 py-5 flex justify-between items-center">
+				<a href="/" class="text-2xl font-black tracking-tight">LYNK</a>
+				<div class="flex items-center gap-8">
+					<a href="/dashboard" class="text-sm font-semibold text-gray-400 hover:text-lime-400 transition-colors">
+						Dashboard
+					</a>
+					<a href="/settings" class="text-sm font-semibold text-lime-400">
+						Settings
+					</a>
+					<a id="profileLink" href="#" class="text-sm font-semibold text-gray-400 hover:text-lime-400 transition-colors">
+						<span id="username"></span>
+					</a>
+					<button id="logoutBtn" class="text-sm font-semibold text-gray-400 hover:text-red-400 transition-colors">
+						Logout
+					</button>
+				</div>
+			</div>
+		</nav>
+
+		<div class="max-w-4xl mx-auto px-6 py-16">
+			<!-- Header -->
+			<div class="mb-16">
+				<h1 class="text-6xl font-black mb-3 tracking-tight">Settings</h1>
+				<p class="text-gray-400 text-lg">Customize your profile and appearance</p>
+			</div>
+
+			<!-- Profile Settings -->
+			<div class="bg-zinc-900 border-2 border-zinc-800 rounded-2xl p-10 mb-8">
+				<h2 class="text-3xl font-black mb-8">Profile</h2>
+				
+				<form id="profileForm" class="space-y-8">
+					<!-- Avatar Upload -->
+					<div>
+						<label class="block text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Avatar</label>
+						<div class="flex gap-6 items-start">
+							<div id="avatarPreview" class="w-32 h-32 bg-black border-2 border-zinc-800 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+								<span class="text-gray-600 text-sm text-center px-2">No avatar</span>
+							</div>
+							<div class="flex-1">
+								<input
+									type="file"
+									id="avatarFile"
+									accept="image/*"
+									class="hidden"
+								/>
+								<button
+									type="button"
+									id="uploadAvatarBtn"
+									class="px-6 py-3 border-2 border-zinc-800 rounded-xl font-bold uppercase tracking-wide hover:border-lime-400 transition-all text-sm mb-2 w-full"
+								>
+									Upload Avatar
+								</button>
+								<p class="text-xs text-gray-600 font-medium">Max 5MB. JPG, PNG, GIF, WebP</p>
+								<input type="hidden" id="avatarUrl" />
+							</div>
+						</div>
+					</div>
+
+					<!-- Display Name -->
+					<div>
+						<label class="block text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Display Name</label>
+						<input
+							type="text"
+							id="displayName"
+							maxlength="100"
+							class="w-full px-5 py-4 rounded-xl bg-black border-2 border-zinc-800 text-white placeholder-gray-600 focus:outline-none focus:border-lime-400 transition-colors font-medium"
+							placeholder="Your Name"
+						/>
+					</div>
+
+					<!-- Bio -->
+					<div>
+						<label class="block text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Bio</label>
+						<textarea
+							id="bio"
+							rows="4"
+							maxlength="500"
+							class="w-full px-5 py-4 rounded-xl bg-black border-2 border-zinc-800 text-white placeholder-gray-600 focus:outline-none focus:border-lime-400 transition-colors font-medium resize-none"
+							placeholder="Tell people about yourself..."
+						></textarea>
+						<p class="text-xs text-gray-600 mt-2 font-medium"><span id="bioCount">0</span>/500 characters</p>
+					</div>
+
+					<div id="profileError" class="hidden bg-red-900/50 border-2 border-red-500 text-red-200 px-5 py-4 rounded-xl text-sm font-semibold"></div>
+					<div id="profileSuccess" class="hidden bg-green-900/50 border-2 border-green-500 text-green-200 px-5 py-4 rounded-xl text-sm font-semibold"></div>
+
+					<button
+						type="submit"
+						class="px-10 py-4 bg-lime-400 text-black rounded-xl font-black text-lg uppercase tracking-wide hover:bg-lime-300 transition-all"
+					>
+						Save Changes
+					</button>
+				</form>
+			</div>
+
+			<!-- QR Code -->
+			<div class="bg-zinc-900 border-2 border-zinc-800 rounded-2xl p-10">
+				<h2 class="text-3xl font-black mb-8">QR Code</h2>
+				<p class="text-gray-400 mb-8">Share your profile with a QR code</p>
+				
+				<div class="flex flex-col items-center">
+					<div id="qrContainer" class="bg-white p-6 rounded-2xl mb-6">
+						<div class="w-64 h-64 flex items-center justify-center text-gray-400">
+							Loading...
+						</div>
+					</div>
+					<button
+						id="downloadQr"
+						class="px-8 py-3 border-2 border-zinc-800 rounded-xl font-black uppercase tracking-wide hover:border-lime-400 transition-all"
+					>
+						Download QR Code
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			const token = localStorage.getItem('token');
+			const user = localStorage.getItem('user');
+
+			if (!token || !user) {
+				window.location.href = '/login';
+			}
+
+			const userData = JSON.parse(user!);
+			const usernameEl = document.getElementById('username');
+			const profileLink = document.getElementById('profileLink');
+			if (usernameEl) usernameEl.textContent = `@${userData.username}`;
+			if (profileLink) profileLink.href = `/u/${userData.username}`;
+
+			// Logout
+			document.getElementById('logoutBtn')?.addEventListener('click', () => {
+				localStorage.removeItem('token');
+				localStorage.removeItem('user');
+				window.location.href = '/';
+			});
+
+			// Avatar upload
+			const avatarPreview = document.getElementById('avatarPreview');
+			const avatarFileInput = document.getElementById('avatarFile') as HTMLInputElement;
+			const uploadAvatarBtn = document.getElementById('uploadAvatarBtn');
+			const avatarUrlInput = document.getElementById('avatarUrl') as HTMLInputElement;
+
+			uploadAvatarBtn?.addEventListener('click', () => {
+				avatarFileInput?.click();
+			});
+
+			avatarFileInput?.addEventListener('change', async () => {
+				const file = avatarFileInput.files?.[0];
+				if (!file) return;
+
+				// Validate file size
+				if (file.size > 5 * 1024 * 1024) {
+					const profileError = document.getElementById('profileError');
+					if (profileError) {
+						profileError.textContent = '❌ File too large! Maximum size is 5MB.';
+						profileError.classList.remove('hidden');
+					}
+					avatarFileInput.value = '';
+					return;
+				}
+
+				// Validate file type
+				const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+				if (!allowedTypes.includes(file.type)) {
+					const profileError = document.getElementById('profileError');
+					if (profileError) {
+						profileError.textContent = '❌ Invalid file type! Only JPG, PNG, GIF, and WebP are allowed.';
+						profileError.classList.remove('hidden');
+					}
+					avatarFileInput.value = '';
+					return;
+				}
+
+				// Show preview
+				const reader = new FileReader();
+				reader.onload = (e) => {
+					if (avatarPreview) {
+						avatarPreview.innerHTML = `<img src="${e.target?.result}" class="w-full h-full object-cover" />`;
+					}
+				};
+				reader.readAsDataURL(file);
+
+				// Show uploading state
+				const uploadBtn = document.getElementById('uploadAvatarBtn');
+				if (uploadBtn) {
+					uploadBtn.textContent = 'Uploading...';
+					uploadBtn.setAttribute('disabled', 'true');
+				}
+
+				// Upload
+				const formData = new FormData();
+				formData.append('file', file);
+
+				try {
+					const response = await fetch('/api/upload/avatar', {
+						method: 'POST',
+						headers: { 'Authorization': `Bearer ${token}` },
+						body: formData
+					});
+
+					if (response.ok) {
+						const data = await response.json();
+						avatarUrlInput.value = data.url;
+						
+						// Show success
+						const profileSuccess = document.getElementById('profileSuccess');
+						if (profileSuccess) {
+							profileSuccess.textContent = '✅ Avatar uploaded successfully! Click "Save Changes" to update your profile.';
+							profileSuccess.classList.remove('hidden');
+							
+							setTimeout(() => {
+								profileSuccess.classList.add('hidden');
+							}, 3000);
+						}
+					} else {
+						const data = await response.json();
+						const profileError = document.getElementById('profileError');
+						if (profileError) {
+							profileError.textContent = `❌ Upload failed: ${data.error || 'Unknown error'}`;
+							profileError.classList.remove('hidden');
+						}
+						
+						// Reset preview
+						if (avatarPreview) {
+							avatarPreview.innerHTML = '<span class="text-gray-600 text-sm text-center px-2">No avatar</span>';
+						}
+					}
+				} catch (error) {
+					const profileError = document.getElementById('profileError');
+					if (profileError) {
+						profileError.textContent = '❌ Network error! Please check your connection and try again.';
+						profileError.classList.remove('hidden');
+					}
+					
+					// Reset preview
+					if (avatarPreview) {
+						avatarPreview.innerHTML = '<span class="text-gray-600 text-sm text-center px-2">No avatar</span>';
+					}
+				} finally {
+					// Reset button
+					if (uploadBtn) {
+						uploadBtn.textContent = 'Upload Avatar';
+						uploadBtn.removeAttribute('disabled');
+					}
+				}
+			});
+
+			// Load profile data
+			async function loadProfile() {
+				try {
+					const response = await fetch('/api/profile', {
+						headers: { 'Authorization': `Bearer ${token}` }
+					});
+
+					if (response.ok) {
+						const data = await response.json();
+						const profile = data.user;
+
+						avatarUrlInput.value = profile.avatar_url || '';
+						(document.getElementById('displayName') as HTMLInputElement).value = profile.display_name || '';
+						(document.getElementById('bio') as HTMLTextAreaElement).value = profile.bio || '';
+						updateBioCount();
+
+						if (profile.avatar_url && avatarPreview) {
+							avatarPreview.innerHTML = `<img src="${profile.avatar_url}" class="w-full h-full object-cover" />`;
+						}
+					}
+				} catch (error) {
+					console.error('Load profile error:', error);
+				}
+			}
+
+			// Bio character count
+			const bioTextarea = document.getElementById('bio') as HTMLTextAreaElement;
+			const bioCount = document.getElementById('bioCount');
+
+			function updateBioCount() {
+				if (bioCount && bioTextarea) {
+					bioCount.textContent = bioTextarea.value.length.toString();
+				}
+			}
+
+			bioTextarea?.addEventListener('input', updateBioCount);
+
+			// Save profile
+			const profileForm = document.getElementById('profileForm') as HTMLFormElement;
+			const profileError = document.getElementById('profileError');
+			const profileSuccess = document.getElementById('profileSuccess');
+
+			profileForm?.addEventListener('submit', async (e) => {
+				e.preventDefault();
+
+				const avatarUrl = avatarUrlInput.value;
+				const displayName = (document.getElementById('displayName') as HTMLInputElement).value;
+				const bio = (document.getElementById('bio') as HTMLTextAreaElement).value;
+
+				profileError?.classList.add('hidden');
+				profileSuccess?.classList.add('hidden');
+
+				try {
+					const response = await fetch('/api/profile', {
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': `Bearer ${token}`
+						},
+						body: JSON.stringify({
+							avatar_url: avatarUrl || null,
+							display_name: displayName || null,
+							bio: bio || null
+						})
+					});
+
+					if (response.ok) {
+						const data = await response.json();
+						// Update localStorage
+						const updatedUser = { ...userData, ...data.user };
+						localStorage.setItem('user', JSON.stringify(updatedUser));
+
+						if (profileSuccess) {
+							profileSuccess.textContent = 'Profile updated successfully!';
+							profileSuccess.classList.remove('hidden');
+						}
+
+						setTimeout(() => {
+							profileSuccess?.classList.add('hidden');
+						}, 3000);
+					} else {
+						const data = await response.json();
+						if (profileError) {
+							profileError.textContent = data.error || 'Failed to update profile';
+							profileError.classList.remove('hidden');
+						}
+					}
+				} catch (error) {
+					if (profileError) {
+						profileError.textContent = 'Network error. Please try again.';
+						profileError.classList.remove('hidden');
+					}
+				}
+			});
+
+			// Load QR code
+			async function loadQRCode() {
+				try {
+					const profileUrl = `${window.location.origin}/u/${userData.username}`;
+					const response = await fetch(`/api/qrcode?url=${encodeURIComponent(profileUrl)}`);
+
+					if (response.ok) {
+						const data = await response.json();
+						const qrContainer = document.getElementById('qrContainer');
+						if (qrContainer) {
+							qrContainer.innerHTML = `<img src="${data.qrCode}" alt="QR Code" class="w-64 h-64" />`;
+						}
+					}
+				} catch (error) {
+					console.error('Load QR code error:', error);
+				}
+			}
+
+			// Download QR code
+			document.getElementById('downloadQr')?.addEventListener('click', async () => {
+				const qrImg = document.querySelector('#qrContainer img') as HTMLImageElement;
+				if (qrImg) {
+					const link = document.createElement('a');
+					link.download = `lynk-${userData.username}-qr.png`;
+					link.href = qrImg.src;
+					link.click();
+				}
+			});
+
+			// Initial load
+			loadProfile();
+			loadQRCode();
+		</script>
+	</body>
+</html>
